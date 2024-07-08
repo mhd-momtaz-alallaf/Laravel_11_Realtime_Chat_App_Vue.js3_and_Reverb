@@ -16,7 +16,7 @@
                             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                                 <div class="p-6">
                                     <div class="flex items-center">
-                                        <a href="#">
+                                        <a href="{{ route('chat' , $user) }}">
                                             <div class="ml-4">
                                                 <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                                                 <div class="text-sm text-gray-500">{{ $user->email }}</div>
