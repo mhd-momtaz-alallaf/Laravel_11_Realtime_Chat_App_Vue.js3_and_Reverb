@@ -15,4 +15,11 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth'])->name('dashboard');
 
+// creating the chat with friends route.
+Route::get('/chat/{friend}', function(User $friend){
+    return view('chat',[
+        'friend' => $friend,
+    ]);
+})->middleware('auth')->name('chat');
+
 require __DIR__.'/auth.php';
