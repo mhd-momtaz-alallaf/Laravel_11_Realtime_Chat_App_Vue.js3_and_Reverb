@@ -19,6 +19,7 @@
         </div>
 
         <!-- the text messages input and send button -->
+        <!-- @keydown is the event of start pressing on the keyboard keys (typing) -->
         <div class="flex items-center">
             <input
                 type="text"
@@ -33,6 +34,11 @@
                 Send
             </button>
         </div>
+
+        <!-- Friend typing... status -->
+        <small v-if="isFriendTyping" class="text-gray-700">
+            {{ friend.name }} is typing...
+        </small>
     </div>
 </template>
 
@@ -59,13 +65,17 @@
     // to handel the scrolling of the page a new message is received.
     const messagesContainer = ref(null);
 
-    // watching the change of the messages, with every change(new message) the messagesContainer area well scroll to the top
-    watch(messages, () => {
-        nextTick(() => {
-            messagesContainer.value.scrollTo({
-                top: messagesContainer.value.scrollHeight,
-                behavior: "smooth",
-            });
+    // to handel the typing.. status when the users start typing
+    const isFriendTyping = ref(false);
+
+    const isFriendTypingTimer = ref(null);
+
+    // Watch for changes in messages to auto-scroll
+    watch(messages, async () => {
+        await nextTick();
+        messagesContainer.value.scrollTo({
+            top: messagesContainer.value.scrollHeight,
+            behavior: 'smooth',
         });
     }, { deep: true });
 
@@ -82,6 +92,14 @@
         }
     };
 
+    // Handling sending typing... event
+    const sendTypingEvent = () => {
+        // we will send the typing... status to the friend
+        Echo.private(`chat.${props.friend.id}`).whisper("typing", {
+            userID: props.currentUser.id,
+        });
+    };
+
     onMounted( () => {
         // getting the messages from the 'messages' api route.
         axios.get(`/messages/${props.friend.id}`)
@@ -92,10 +110,21 @@
 
         // receiving the broadcasted message to show it to the receiver in realtime.
         Echo.private(`chat.${props.currentUser.id}`)
-            // listening to the MessageSent Event
-            .listen('MessageSent', (response) =>{
-                // pushing the new message to the messages array that we loop on it in the template.
-                messages.value.push(response.message);
-            })
+        // listening to the MessageSent Event
+        .listen('MessageSent', (response) =>{
+            // pushing the new message to the messages array that we loop on it in the template.
+            messages.value.push(response.message);
+        })
+        .listenForWhisper("typing", (response) => {
+            isFriendTyping.value = response.userID === props.friend.id;
+
+            if (isFriendTypingTimer.value) {
+                clearTimeout(isFriendTypingTimer.value);
+            }
+
+            isFriendTypingTimer.value = setTimeout(() => {
+                isFriendTyping.value = false;
+            }, 800);
+        });
     });
 </script>
