@@ -35,7 +35,8 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import axios from 'axios';
+    import { onMounted, ref } from 'vue';
 
     const messages= ref([
         { id: 1, text: 'Hello', isMe: false },
@@ -57,4 +58,12 @@
             newMessage.value = "";
         }
     };
+
+    // getting the messages from the 'messages' api route.
+    onMounted( () => {
+        axios.get(`/messages/friendId`)
+        .then( (response) => {
+            messages.value = response.data;
+        });
+    });
 </script>
