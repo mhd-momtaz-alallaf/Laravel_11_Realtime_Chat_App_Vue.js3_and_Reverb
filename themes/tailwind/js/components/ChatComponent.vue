@@ -18,9 +18,10 @@
             </div>
         </div>
 
-        <!-- the text messages input and send button -->
-        <!-- @keydown is the event of start pressing on the keyboard keys (typing) -->
+        <!-- The text messages input and send button -->
         <div class="flex items-center">
+            <!-- @keydown is the event of start pressing on the keyboard keys (typing) -->
+            <!-- @keyup.enter triggers the sendMessage function to send the message when the Enter key is pressed -->
             <input
                 type="text"
                 v-model="newMessage"
@@ -43,89 +44,97 @@
 </template>
 
 <script setup>
-    import axios from 'axios';
-    import { nextTick, onMounted, ref, watch } from 'vue';
+import axios from 'axios';
+import { defineProps, nextTick, onMounted, ref, watch } from 'vue';
 
-    // Receiving the friend and the curring-user that passed to the component.
-    const props = defineProps({
-        friend: {
-            type: Object,
-            required: true,
-        },
-        currentUser: {
-            type: Object,
-            required: true,
-        },
+// Receiving the friend and the curring-user that passed to the component and Defines them as required props.
+const props = defineProps({
+    friend: {
+        type: Object,
+        required: true,
+    },
+    currentUser: {
+        type: Object,
+        required: true,
+    },
+});
+
+// the messages array that contains all the messages to loop on it in the template.
+const messages = ref([]);
+
+// the new sent message.
+const newMessage = ref("");
+
+// to handel the scrolling of the page a new message is received.
+const messagesContainer = ref(null);
+
+// to handel the typing.. status when the users start typing
+const isFriendTyping = ref(false);
+
+// to handel the time of showing 'friend is typing...'
+const isFriendTypingTimer = ref(null);
+
+// Watch for changes in messages to auto-scroll
+watch(messages, async () => {
+    // Uses nextTick to ensure the DOM is updated before scrolling.
+    await nextTick();
+    messagesContainer.value.scrollTo({
+        top: messagesContainer.value.scrollHeight,
+        behavior: 'smooth',
+    });
+}, { deep: true });
+
+// Send a new message
+const sendMessage = () => {
+    if (newMessage.value.trim()) {
+        // triggering the back-end api, sending a request to back-end to store the new message into the database.
+        axios.post(`/messages/${props.friend.id}`, {
+            message: newMessage.value,
+        }).then(response => {
+            messages.value.push(response.data);
+            newMessage.value = '';
+        });
+    }
+};
+
+// Handling sending typing... event
+const sendTypingEvent = () => {
+    // we will send the typing... status to the friend only, so we passed the friend id to the channel route
+    // sends a whisper event on the private chat.{friend.id} channel.
+    Echo.private(`chat.${props.friend.id}`).whisper("typing", {
+        userID: props.currentUser.id,
+    });
+};
+
+// Fetch initial messages and set up listeners
+onMounted(() => {
+    // getting the messages from the 'messages' api route.
+    axios.get(`/messages/${props.friend.id}`).then( (response) => {
+        messages.value = response.data;
     });
 
-    const messages = ref([]);
-
-    const newMessage = ref("");
-
-    // to handel the scrolling of the page a new message is received.
-    const messagesContainer = ref(null);
-
-    // to handel the typing.. status when the users start typing
-    const isFriendTyping = ref(false);
-
-    const isFriendTypingTimer = ref(null);
-
-    // Watch for changes in messages to auto-scroll
-    watch(messages, async () => {
-        await nextTick();
-        messagesContainer.value.scrollTo({
-            top: messagesContainer.value.scrollHeight,
-            behavior: 'smooth',
-        });
-    }, { deep: true });
-
-    // Handling sending Messages
-    const sendMessage = () => {
-        if (newMessage.value.trim() !== "") {
-            axios
-                .post(`/messages/${props.friend.id}`, {
-                    message: newMessage.value,
-                })
-                .then((response) => {
-                    messages.value.push(response.data);
-                    newMessage.value = "";
-                });
-        }
-    };
-
-    // Handling sending typing... event
-    const sendTypingEvent = () => {
-        // we will send the typing... status to the friend
-        Echo.private(`chat.${props.friend.id}`).whisper("typing", {
-            userID: props.currentUser.id,
-        });
-    };
-
-    onMounted( () => {
-        // getting the messages from the 'messages' api route.
-        axios.get(`/messages/${props.friend.id}`)
-        .then( (response) => {
-            console.log(response.data);
-            messages.value = response.data;
-        });
-
-        // receiving the broadcasted message to show it to the receiver in realtime.
-        Echo.private(`chat.${props.currentUser.id}`)
+    // receiving the broadcasted message to show it to the receiver in realtime.
+    // Laravel Echo is a JavaScript library that makes it easy to work with WebSockets in Laravel applications. It provides a simple API for subscribing to channels and listening for events broadcast by the Laravel backend.
+    Echo.private(`chat.${props.currentUser.id}`)
         // listening to the MessageSent Event
-        .listen('MessageSent', (response) =>{
+        .listen('MessageSent', (response) => {
             // pushing the new message to the messages array that we loop on it in the template.
             messages.value.push(response.message);
         })
         .listenForWhisper("typing", (response) => {
+            // isFriendTyping.value is set to true if the user who is typing is the friend. Otherwise, it is set to false.
             isFriendTyping.value = response.userID === props.friend.id;
 
+            // if there is already an existing typing timer (isFriendTypingTimer.value), it is cleared using clearTimeout
             if (isFriendTypingTimer.value) {
                 clearTimeout(isFriendTypingTimer.value);
             }
 
+            // A new timer is set with setTimeout, This timer will set isFriendTyping.value to false after 800 milliseconds (0.8 seconds), This means the typing indicator will disappear if no new typing event is received within 800 milliseconds.
             isFriendTypingTimer.value = setTimeout(() => {
                 isFriendTyping.value = false;
             }, 800);
         });
-    });
+});
+// Whisper is a feature provided by Laravel Echo that allows you to send small bits of information to other clients connected to the same private channel. These whispers are not stored on the server; they are only sent to other clients subscribed to the same channel, making them useful for real-time interactions like indicating a user is typing.
 </script>
