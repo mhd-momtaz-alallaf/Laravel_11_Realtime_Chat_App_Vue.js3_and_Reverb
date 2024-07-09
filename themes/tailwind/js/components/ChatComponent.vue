@@ -79,6 +79,7 @@
         });
     }, { deep: true });
 
+    // Handling sending Messages
     const sendMessage = () => {
         if (newMessage.value.trim() !== "") {
             axios
