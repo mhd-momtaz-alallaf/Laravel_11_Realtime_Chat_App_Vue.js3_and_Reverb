@@ -5,10 +5,12 @@
             <div class="p-4 overflow-y-auto max-h-fit">
                 <div v-for="message in messages" :key="message.id" class="flex items-center mb-2">
 
-                    <div v-if="message.isMe" class="p-2 ml-auto text-white bg-blue-500 rounded-lg">
+                    <!-- showing blue background if the current user is the sender of the message -->
+                    <div v-if="message.sender_id == currentUser.id" class="p-2 ml-auto text-white bg-blue-500 rounded-lg">
                         {{ message.text }}
                     </div>
 
+                    <!-- showing gray background otherwise (if the current user is not the sender of the message) -->
                     <div v-else class="p-2 mr-auto bg-gray-200 rounded-lg">
                         {{ message.text }}
                     </div>
@@ -50,10 +52,7 @@
         },
     });
 
-    const messages= ref([
-        { id: 1, text: 'Hello', isMe: false },
-        { id: 2, text: 'hi', isMe: true },
-    ]);
+    const messages= ref([]);
 
     const newMessage= ref("");
 
@@ -73,8 +72,9 @@
 
     // getting the messages from the 'messages' api route.
     onMounted( () => {
-        axios.get(`/messages/friendId`)
+        axios.get(`/messages/${props.friend.id}`)
         .then( (response) => {
+            console.log(response.data);
             messages.value = response.data;
         });
     });

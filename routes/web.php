@@ -25,7 +25,7 @@ Route::get('/chat/{friend}', function(User $friend){
 
 // Creating the messages route and getting all the sender and receiver messages to use it later in the ChatComponent as data api.
 Route::get('messages/{friend}',function(User $friend){
-    return ChatMessage::withRelations()->query()
+    return ChatMessage::withRelations()
         // The messages sent by the authenticated user to the friend.
         ->where(function($query) use ($friend){
             $query
