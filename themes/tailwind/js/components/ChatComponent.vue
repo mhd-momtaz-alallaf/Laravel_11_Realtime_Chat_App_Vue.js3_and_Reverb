@@ -2,7 +2,7 @@
     <div>
         <!-- messages aria -->
         <div class="flex flex-col justify-end h-80">
-            <div class="p-4 overflow-y-auto max-h-fit">
+            <div ref="messagesContainer" class="p-4 overflow-y-auto max-h-fit">
                 <div v-for="message in messages" :key="message.id" class="flex items-center mb-2">
 
                     <!-- showing blue background if the current user is the sender of the message -->
@@ -38,7 +38,7 @@
 
 <script setup>
     import axios from 'axios';
-    import { onMounted, ref } from 'vue';
+    import { nextTick, onMounted, ref, watch } from 'vue';
 
     // Receiving the friend and the curring-user that passed to the component.
     const props = defineProps({
@@ -52,9 +52,22 @@
         },
     });
 
-    const messages= ref([]);
+    const messages = ref([]);
 
-    const newMessage= ref("");
+    const newMessage = ref("");
+
+    // to handel the scrolling of the page a new message is received.
+    const messagesContainer = ref(null);
+
+    // watching the change of the messages, with every change(new message) the messagesContainer area well scroll to the top
+    watch(messages, () => {
+        nextTick(() => {
+            messagesContainer.value.scrollTo({
+                top: messagesContainer.value.scrollHeight,
+                behavior: "smooth",
+            });
+        });
+    }, { deep: true });
 
     const sendMessage = () => {
         if (newMessage.value.trim() !== "") {
