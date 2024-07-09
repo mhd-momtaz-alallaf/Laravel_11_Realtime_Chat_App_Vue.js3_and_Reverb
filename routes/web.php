@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\MessageSent;
 use App\Models\ChatMessage;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -54,13 +55,17 @@ Route::post('/messages/{friend}', function(Request $request, User $friend) {
         'message' => 'required',
     ]);
 
+    // Storing the message in the database.
     $message = ChatMessage::create([
         'sender_id' => auth()->id(),
         'receiver_id' => $friend->id,
         'text' => $validated['message'],
     ]);
 
-    return response()->json($message);
+    // broadcasting(sending in realtime) the message to the receiver after sending it by the sender via the MessageSent Event.
+    broadcast(new MessageSent($message));
+
+    return $message;
 })->middleware('auth');
 
 require __DIR__.'/auth.php';
