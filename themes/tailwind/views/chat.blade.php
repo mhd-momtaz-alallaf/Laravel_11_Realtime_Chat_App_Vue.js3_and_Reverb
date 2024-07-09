@@ -11,8 +11,8 @@
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
 
-                    {{-- Using the Vue.js ChatComponent in the chat view file--}}
-                    <chat-component />
+                    {{-- Using the Vue.js ChatComponent in the chat view file, and passing the friend and the current-user instances to the component --}}
+                    <chat-component :friend="{{ $friend }}" :current-user="{{ auth()->user() }}" />
                 </div>
             </div>
         </div>

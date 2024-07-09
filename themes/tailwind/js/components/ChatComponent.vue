@@ -38,6 +38,18 @@
     import axios from 'axios';
     import { onMounted, ref } from 'vue';
 
+    // Receiving the friend and the curring-user that passed to the component.
+    const props = defineProps({
+        friend: {
+            type: Object,
+            required: true,
+        },
+        currentUser: {
+            type: Object,
+            required: true,
+        },
+    });
+
     const messages= ref([
         { id: 1, text: 'Hello', isMe: false },
         { id: 2, text: 'hi', isMe: true },
