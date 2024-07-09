@@ -2,6 +2,7 @@
 
 use App\Models\ChatMessage;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,24 +25,42 @@ Route::get('/chat/{friend}', function(User $friend){
 })->middleware('auth')->name('chat');
 
 // Creating the messages route and getting all the sender and receiver messages to use it later in the ChatComponent as data api.
-Route::get('messages/{friend}',function(User $friend){
-    return ChatMessage::withRelations()
+Route::get('/messages/{friend}', function(User $friend) {
+    $messages = ChatMessage::withRelations()
         // The messages sent by the authenticated user to the friend.
-        ->where(function($query) use ($friend){
+        ->where(function($query) use ($friend) {
             $query
-            ->where('sender_id', auth()->id())
-            ->where('receiver_id', $friend->id);
+                ->where('sender_id', auth()->id())
+                ->where('receiver_id', $friend->id);
         })
         // The messages sent by the friend to the authenticated user.
-        ->orWhere(function($query) use ($friend){
+        ->orWhere(function($query) use ($friend) {
             $query
-            ->where('sender_id', $friend->id)
-            ->where('receiver_id',auth()->id());
+                ->where('sender_id', $friend->id)
+                ->where('receiver_id', auth()->id());
         })
-        // sorting the messages by the message id.
+        // Sorting the messages by the message id.
         ->orderBy('id', 'asc')
-        // getting the query results.
+        // Getting the query results.
         ->get();
+
+    // Returning the results as a JSON response
+    return response()->json($messages);
+})->middleware('auth');
+
+// Creating the send(store) messages route.
+Route::post('/messages/{friend}', function(Request $request, User $friend) {
+    $validated = $request->validate([
+        'message' => 'required',
+    ]);
+
+    $message = ChatMessage::create([
+        'sender_id' => auth()->id(),
+        'receiver_id' => $friend->id,
+        'text' => $validated['message'],
+    ]);
+
+    return response()->json($message);
 })->middleware('auth');
 
 require __DIR__.'/auth.php';
