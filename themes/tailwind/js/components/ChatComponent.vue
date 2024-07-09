@@ -57,24 +57,32 @@
     const newMessage= ref("");
 
     const sendMessage = () => {
-    if (newMessage.value.trim() !== "") {
-        axios
-            .post(`/messages/${props.friend.id}`, {
-                message: newMessage.value,
-            })
-            .then((response) => {
-                messages.value.push(response.data);
-                newMessage.value = "";
-            });
-    }
-};
+        if (newMessage.value.trim() !== "") {
+            axios
+                .post(`/messages/${props.friend.id}`, {
+                    message: newMessage.value,
+                })
+                .then((response) => {
+                    messages.value.push(response.data);
+                    newMessage.value = "";
+                });
+        }
+    };
 
-    // getting the messages from the 'messages' api route.
     onMounted( () => {
+        // getting the messages from the 'messages' api route.
         axios.get(`/messages/${props.friend.id}`)
         .then( (response) => {
             console.log(response.data);
             messages.value = response.data;
         });
+
+        // receiving the broadcasted message to show it to the receiver in realtime.
+        Echo.private(`chat.${props.currentUser.id}`)
+            // listening to the MessageSent Event
+            .listen('MessageSent', (response) =>{
+                // pushing the new message to the messages array that we loop on it in the template.
+                messages.value.push(response.message);
+            })
     });
 </script>
