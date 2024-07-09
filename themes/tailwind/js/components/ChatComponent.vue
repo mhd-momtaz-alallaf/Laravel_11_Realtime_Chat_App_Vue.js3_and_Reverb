@@ -57,18 +57,17 @@
     const newMessage= ref("");
 
     const sendMessage = () => {
-        if (newMessage.value.trim() !== "") {
-            messages.value.push({
-                id: messages.value.length + 1,
-
-                text: newMessage.value,
-
-                isMe: true,
+    if (newMessage.value.trim() !== "") {
+        axios
+            .post(`/messages/${props.friend.id}`, {
+                message: newMessage.value,
+            })
+            .then((response) => {
+                messages.value.push(response.data);
+                newMessage.value = "";
             });
-
-            newMessage.value = "";
-        }
-    };
+    }
+};
 
     // getting the messages from the 'messages' api route.
     onMounted( () => {
