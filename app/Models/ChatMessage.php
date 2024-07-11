@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Crypt;
 
 class ChatMessage extends Model
 {
@@ -15,6 +16,23 @@ class ChatMessage extends Model
         'sender_id',
         'text',
     ];
+
+    // Encrypting the message text before saving it to the database
+    public function setTextAttribute($value)
+    {
+        $this->attributes['text'] = Crypt::encryptString($value);
+    }
+
+   // Decrypt the message text when retrieving it from the database
+   public function getTextAttribute($value)
+   {
+       try {
+           return Crypt::decryptString($value);
+       } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+           // Handle the error or log it
+           return 'Decryption failed';
+       }
+   }
 
     // Creating the receiver relation of the ChatMessage model, Each chat message is sent to one specific user (receiver).
     public function receiver(): BelongsTo
