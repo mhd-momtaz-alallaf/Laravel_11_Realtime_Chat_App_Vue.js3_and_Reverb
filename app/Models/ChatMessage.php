@@ -23,16 +23,16 @@ class ChatMessage extends Model
         $this->attributes['text'] = Crypt::encryptString($value);
     }
 
-   // Decrypt the message text when retrieving it from the database
-   public function getTextAttribute($value)
-   {
-       try {
-           return Crypt::decryptString($value);
-       } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-           // Handle the error or log it
-           return 'Decryption failed';
-       }
-   }
+    // Decrypting the message text when retrieving it from the database
+    public function getTextAttribute($value)
+    {
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            // Handle the error or log it
+            return 'Decryption failed';
+        }
+    }
 
     // Creating the receiver relation of the ChatMessage model, Each chat message is sent to one specific user (receiver).
     public function receiver(): BelongsTo
