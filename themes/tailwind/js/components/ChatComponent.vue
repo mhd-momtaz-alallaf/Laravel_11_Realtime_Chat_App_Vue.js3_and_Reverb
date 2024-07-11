@@ -3,15 +3,22 @@
         <!-- messages aria -->
         <div class="flex flex-col justify-end h-80">
             <div ref="messagesContainer" class="p-4 overflow-y-auto max-h-fit">
-                <div v-for="message in messages" :key="message.id" class="flex items-center mb-2">
+                <!-- Display a placeholder message if there are no messages -->
+                <div v-if="messages.length === 0" class="flex items-center justify-center h-full text-gray-500">
+                    <p class="mb-6 text-center">
+                        No messages yet. Start a new conversation!
+                    </p>
+                </div>
+
+                <div v-else v-for="message in messages" :key="message.id" class="flex items-center mb-2">
 
                     <!-- showing blue background if the current user is the sender of the message -->
-                    <div v-if="message.sender_id == currentUser.id" class="p-2 ml-auto text-white bg-blue-500 rounded-lg">
+                    <div v-if="message.sender_id == currentUser.id" class="p-2 ml-auto text-white bg-blue-500 rounded-lg break-words max-w-md">
                         {{ message.text }}
                     </div>
 
                     <!-- showing gray background otherwise (if the current user is not the sender of the message) -->
-                    <div v-else class="p-2 mr-auto bg-gray-200 rounded-lg">
+                    <div v-else class="p-2 mr-auto bg-gray-200 rounded-lg text-wrap break-words max-w-md">
                         {{ message.text }}
                     </div>
                 </div>
@@ -19,7 +26,7 @@
         </div>
 
         <!-- The text messages input and send button -->
-        <div class="flex items-center">
+        <div class="flex items-center p-4 border-t">
             <!-- @keydown is the event of start pressing on the keyboard keys (typing) -->
             <!-- @keyup.enter triggers the sendMessage function to send the message when the Enter key is pressed -->
             <input
@@ -31,13 +38,13 @@
                 class="flex-1 px-2 py-1 border rounded-lg"
             />
 
-            <button @click="sendMessage" class="px-4 py-1 ml-2 text-white bg-blue-500 rounded-lg">
+            <button @click="sendMessage" class="rounded-lg px-4 py-1 ml-2 text-white bg-blue-500 hover:bg-blue-700 ">
                 Send
             </button>
         </div>
 
         <!-- Friend typing... status -->
-        <small v-if="isFriendTyping" class="text-gray-700">
+        <small v-if="isFriendTyping" class="text-gray-700 px-4">
             {{ friend.name }} is typing...
         </small>
     </div>
@@ -45,7 +52,7 @@
 
 <script setup>
 import axios from 'axios';
-import { defineProps, nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 // Receiving the friend and the curring-user that passed to the component and Defines them as required props.
 const props = defineProps({
