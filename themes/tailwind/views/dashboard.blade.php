@@ -1,34 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('Dashboard') }}
+        <h2 class="text-xl pb-2 text-center font-semibold text-gray-800">
+            Contacts
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-
-                    {{-- Showing the list of users using tailwind css --}}
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        @foreach ($users as $user)
-                            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                                <div class="p-6">
-                                    <div class="flex items-center">
-                                        <a href="{{ route('chat' , $user) }}">
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $user->email }}</div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+    {{-- Showing the list of users using tailwind css --}}
+    <div class="container mx-auto p-4">
+        <div class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            @foreach ($users as $user)
+                <a href="{{ route('chat', $user) }}">
+                    <div class="p-4 border rounded-lg shadow-sm bg-white grid grid-cols-3 gap-4 items-center">
+                        <!-- User Avatar -->
+                        <div class="col-span-1 flex justify-center">
+                            <img src="{{ url('storage\avatar.jpg') }}" alt="User Avatar" class="w-16 h-16 rounded-full object-cover">
+                        </div>
+                        <!-- User Info -->
+                        <div class="col-span-2 flex flex-col">
+                            <div class="font-bold">{{ $user->name }}</div>
+                            <div class="text-gray-600">{{ $user->email }}</div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </a>
+            @endforeach
         </div>
     </div>
 </x-app-layout>
