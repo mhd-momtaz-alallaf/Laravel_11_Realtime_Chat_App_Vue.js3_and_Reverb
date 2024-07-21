@@ -4,16 +4,8 @@ import path from "path";
 import tailwindcss from "tailwindcss";
 import vue from '@vitejs/plugin-vue';
 
-
 export default defineConfig({
     plugins: [
-        laravel({
-            input: [
-                "themes\tailwind\css/app.css",
-                "themes\tailwind\js/app.js"
-            ],
-            buildDirectory: "tailwind",
-        }),
         vue({
             template: {
                 transformAssetUrls: {
@@ -22,7 +14,13 @@ export default defineConfig({
                 },
             },
         }),
-        
+        laravel({
+            input: [
+                "themes/tailwind/css/app.css",
+                "themes/tailwind/js/app.js"
+            ],
+            buildDirectory: "tailwind",
+        }),
         {
             name: "blade",
             handleHotUpdate({ file, server }) {
@@ -37,8 +35,8 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': '/themes\tailwind\js',
-            
+            '@': '/themes/tailwind/js',
+
         }
     },
     css: {

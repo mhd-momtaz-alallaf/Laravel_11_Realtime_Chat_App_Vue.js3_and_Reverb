@@ -11,7 +11,6 @@
                 </div>
 
                 <div v-else v-for="message in messages" :key="message.id" class="flex items-center mb-2">
-
                     <!-- showing blue background if the current user is the sender of the message -->
                     <div v-if="message.sender_id == currentUser.id" class="p-2 ml-auto text-white bg-blue-500 rounded-lg break-words max-w-md">
                         {{ message.text }}
